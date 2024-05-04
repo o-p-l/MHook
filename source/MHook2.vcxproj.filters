@@ -165,5 +165,17 @@
     <Image Include="..\bm8wred.bmp">
       <Filter>Файлы ресурсов</Filter>
     </Image>
+    <Image Include="bm8w.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="bm4w.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="bm4wred.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="bm8wred.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
   </ItemGroup>
 </Project>

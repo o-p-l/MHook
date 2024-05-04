@@ -22,7 +22,7 @@ int MHVector::x=0, MHVector::y=0, MHVector::vector_position=-1;
 //===========================================================================================================
 int MHVector::NewValues(LONG dx, LONG dy)
 {
-	int angle, angle2, new_position;
+	int angle = 0, angle2 = 0, new_position = 0;
 
 	// 1. Ищем, в какую сторону повернута мышь
 	// 1.1. Сначала добавляем к существующему вектору изменение
@@ -30,7 +30,9 @@ int MHVector::NewValues(LONG dx, LONG dy)
 		
 	// 1.2. Теперь смотрим, вырос ли вектор за предел лимита
 	//double s=sqrt((double)(x*x+y*y));
-	if(sqrt((double)(x*x+y*y))<(double)MHSettings::GetMouseSensitivity()) return -2; //мышь подвинули недостаточно
+	if (sqrt((double)(x * x + y * y)) < (double)MHSettings::GetMouseSensitivity()) {
+		return -2; //мышь подвинули недостаточно
+	}
 
 	// вернём нормализованный (до 100) вектор движения мыши
 	quad_x=(LONG)(MH_WINDOW_SIZE/2*x/sqrt((double)(x*x+y*y)));
@@ -77,9 +79,9 @@ int MHVector::NewValues(LONG dx, LONG dy)
 	x=0;y=0;
 
 	// 1.5 А нажимаем ли на новую кнопку?
-	if(vector_position==new_position) 	return -1;
-	else
-	{
+	if (vector_position == new_position) {
+		return -1;
+	} else {
 		vector_position=new_position;
 		return vector_position;
 	}

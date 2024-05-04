@@ -7,7 +7,7 @@
 #ifdef _DEBUG
 	#include <stdio.h>
 	#include <math.h>
-	TCHAR debug_buf[4096];
+	TCHAR debug_buf_3[4096];
 #endif
 
 bool IsOpposite(int old_direction, int new_direction); // Определена в hh1.cpp
@@ -24,7 +24,10 @@ static DWORD last_any_time=0, // Время последнего ппереме�
 
 void MHookHandler3::OnTimer()
 {
-	if(-1==position_mem) {KillTimer(MHhwnd,1);return;} // Клавиша не нажата, делать нечего
+	if(-1==position_mem) {
+		KillTimer(MHhwnd,1);
+		return;
+	} // Клавиша не нажата, делать нечего
 
 	// Проверяем, а не рудимент ли это, оставшийся в очереди сообщений?
 	// Для этого проверим, действительнор ли истекло нужное время
@@ -44,10 +47,10 @@ void MHookHandler3::OnTimer()
 
 int MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 {
-	int position;
+	int position = 0;
 	DWORD time_now=timeGetTime();
-	float Qspeed;
-	int IsOp;
+	float Qspeed = 0.0f;
+	int IsOp = 0;
 
 	// При нажатой правой кнопке мыши не передаём её движения в MHVector,
 	// НО! продолжаем отслеживать last_x и last_y, не сбрасывая initialized! 
@@ -92,8 +95,8 @@ int MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 				// Безусловно ничего не жмём, запоминаем время
 				last_fast_time=time_now;
 #ifdef _DEBUG
-				swprintf(debug_buf,_countof(debug_buf),L"FAST dx: %d  dy: %d Qspeed: %f time: %lu\n", dx,dy,Qspeed, time_now-last_any_time);
-				OutputDebugString(debug_buf);
+				swprintf(debug_buf_3,_countof(debug_buf_3),L"FAST dx: %d  dy: %d Qspeed: %f time: %lu\n", dx,dy,Qspeed, time_now-last_any_time);
+				OutputDebugString(debug_buf_3);
 #endif
 			}
 			else // Скорость низкая, проверяем дополнительно
@@ -107,8 +110,8 @@ int MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 				{
 					oast_allowed--;
 #ifdef _DEBUG
-				swprintf(debug_buf,_countof(debug_buf),L"OAST dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu\n", dx,dy,Qspeed, time_now-last_any_time, time_now-last_fast_time);
-				OutputDebugString(debug_buf);
+				swprintf(debug_buf_3,_countof(debug_buf_3),L"OAST dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu\n", dx,dy,Qspeed, time_now-last_any_time, time_now-last_fast_time);
+				OutputDebugString(debug_buf_3);
 #endif
 				}
 				// 2.2 а,б - начало, запоминаем его время 
@@ -118,8 +121,8 @@ int MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 					last_bast_time=time_now;
 					b2st_allowed=2;
 #ifdef _DEBUG
-				swprintf(debug_buf,_countof(debug_buf),L"BAST dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu\n", dx,dy,Qspeed, time_now-last_any_time, time_now-last_fast_time);
-				OutputDebugString(debug_buf);
+				swprintf(debug_buf_3,_countof(debug_buf_3),L"BAST dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu\n", dx,dy,Qspeed, time_now-last_any_time, time_now-last_fast_time);
+				OutputDebugString(debug_buf_3);
 #endif
 				}
 				// 2.2. в: возможно, разгоняемся
@@ -127,8 +130,8 @@ int MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 				{
 					b2st_allowed--;
 #ifdef _DEBUG
-				swprintf(debug_buf,_countof(debug_buf),L"B2ST dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu\n", dx,dy,Qspeed, time_now-last_any_time, time_now-last_fast_time);
-				OutputDebugString(debug_buf);
+				swprintf(debug_buf_3,_countof(debug_buf_3),L"B2ST dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu\n", dx,dy,Qspeed, time_now-last_any_time, time_now-last_fast_time);
+				OutputDebugString(debug_buf_3);
 #endif
 				}
 				else // Всё-таки настояли на SLOW! (теперь сюда попадают и dx==0, dy==0)
@@ -145,8 +148,8 @@ int MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 						MHVector::Reset(); // Вот это обязательно, иначе в том же направлении мышь не нажмёт клавишу
 						InvalidateRect(MHhwnd,NULL,TRUE); // Правильные квадратики
 #ifdef _DEBUG
-				swprintf(debug_buf,_countof(debug_buf),L"OPPO dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu\n", dx,dy,Qspeed, time_now-last_any_time, time_now-last_fast_time);
-				OutputDebugString(debug_buf);
+				swprintf(debug_buf_3,_countof(debug_buf_3),L"OPPO dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu\n", dx,dy,Qspeed, time_now-last_any_time, time_now-last_fast_time);
+				OutputDebugString(debug_buf_3);
 #endif
 
 					}
@@ -166,8 +169,8 @@ int MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 							SetTimer(MHhwnd,1,MHSettings::timeout_after_move,NULL);
 						}
 #ifdef _DEBUG
-						swprintf(debug_buf,_countof(debug_buf),L"SLOW dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu pos: %d IsOp: %d\n", dx,dy,Qspeed, time_now-last_any_time, time_now-last_fast_time, position, IsOp);
-						OutputDebugString(debug_buf);
+						swprintf(debug_buf_3,_countof(debug_buf_3),L"SLOW dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu pos: %d IsOp: %d\n", dx,dy,Qspeed, time_now-last_any_time, time_now-last_fast_time, position, IsOp);
+						OutputDebugString(debug_buf_3);
 #endif
 					}
 				} // обрабатываем движение
@@ -186,8 +189,8 @@ int MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 		if((!MHSettings::flag_skip_fast)||(dx*dx+dy*dy<MHSettings::minimal_mouse_speed/54)) 
 		{
 #ifdef _DEBUG
-		//	swprintf(debug_buf,_countof(debug_buf),L"SLOW: dx: %d  dy: %d time: %ul\n", dx,dy,time_now-last_fast_time);
-		//	OutputDebugString(debug_buf);
+		//	swprintf(debug_buf_3,_countof(debug_buf_3),L"SLOW: dx: %d  dy: %d time: %ul\n", dx,dy,time_now-last_fast_time);
+		//	OutputDebugString(debug_buf_3);
 #endif
 			// нажатие разрешено при flag_skip_test только, если успокоились после быстрого движения
 			//if((!MHSettings::flag_skip_fast)||(time_now-last_fast_time>1000))
@@ -195,10 +198,10 @@ int MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 				position=MHVector::NewValues(dx,dy);
 
 #ifdef _DEBUG
-				//swprintf(debug_buf,_countof(debug_buf),L"SLOW dx: %d  dy: %d Qspeed: %f time: %lu pos: %d\n", dx,dy,sqrt((float)(dx*dx+dy*dy))/(time_now-last_any_time), time_now-last_fast_time, position);
-				//swprintf(debug_buf,_countof(debug_buf),L"SLOW dx: %d  dy: %d Qspeed: %f time: %lu pos: %d\n", dx,dy,5625.0*(dx*dx+dy*dy)/(time_now-last_any_time)/(time_now-last_any_time), time_now-last_fast_time, position);
-				swprintf(debug_buf,_countof(debug_buf),L"SLOW dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu pos: %d\n", dx,dy,100.0f*(dx*dx+dy*dy)/(time_now-last_any_time), time_now-last_any_time, time_now-last_fast_time, position);
-				OutputDebugString(debug_buf);
+				//swprintf(debug_buf_3,_countof(debug_buf_3),L"SLOW dx: %d  dy: %d Qspeed: %f time: %lu pos: %d\n", dx,dy,sqrt((float)(dx*dx+dy*dy))/(time_now-last_any_time), time_now-last_fast_time, position);
+				//swprintf(debug_buf_3,_countof(debug_buf_3),L"SLOW dx: %d  dy: %d Qspeed: %f time: %lu pos: %d\n", dx,dy,5625.0*(dx*dx+dy*dy)/(time_now-last_any_time)/(time_now-last_any_time), time_now-last_fast_time, position);
+				swprintf(debug_buf_3,_countof(debug_buf_3),L"SLOW dx: %d  dy: %d Qspeed: %f time: %lu ftime: %lu pos: %d\n", dx,dy,100.0f*(dx*dx+dy*dy)/(time_now-last_any_time), time_now-last_any_time, time_now-last_fast_time, position);
+				OutputDebugString(debug_buf_3);
 #endif
 				if(0<=position) // -2=мышь подвинулась на недостаточное растояние, -1= направление не изменилось
 				{

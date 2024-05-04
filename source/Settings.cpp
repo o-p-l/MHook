@@ -118,7 +118,7 @@ MHWORDChar dlg_scancodes[MH_NUM_SCANCODES_EXTRA]=
 
 //static int dlg_current_scancodes[11]={0,1,2,3,12,11,4,5,6,7,11};
 //static int dlg_current_scancodes[15]={1,2,3,4,67,53,27,8,23,5,0,9,10,11,12};
-static int dlg_current_scancodes[15]={27,8,23,5,67,53,  24,66,12,17, 0, 6,9,0,56};
+static int dlg_current_scancodes[17]={27,8,23,5,67,53,24,66,12,17,0,6,9,0,56,0,0};
 
 // Таймаут после движения
 #define MH_NUM_TIMEOUT 9
@@ -278,11 +278,13 @@ void MHSettings::FillDialogue(HWND hdwnd)
 			SendDlgItemMessage(hdwnd,IDC_LEFT, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
 			SendDlgItemMessage(hdwnd,IDC_BUTTON5, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
 			SendDlgItemMessage(hdwnd,IDC_BUTTON6, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
+			SendDlgItemMessage(hdwnd,IDC_BUTTON6_1, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
 			SendDlgItemMessage(hdwnd,IDC_UP2, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
 			SendDlgItemMessage(hdwnd,IDC_RIGHT2, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
 			SendDlgItemMessage(hdwnd,IDC_DOWN2, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
 			SendDlgItemMessage(hdwnd,IDC_LEFT2, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
 			SendDlgItemMessage(hdwnd,IDC_BUTTON7, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
+			SendDlgItemMessage(hdwnd,IDC_BUTTON7_1, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
 			SendDlgItemMessage(hdwnd,IDC_UP3, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
 			SendDlgItemMessage(hdwnd,IDC_RIGHT3, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
 			SendDlgItemMessage(hdwnd,IDC_DOWN3, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
@@ -369,6 +371,8 @@ void MHSettings::AfterLoad(HWND hdwnd)
 		SendDlgItemMessage(hdwnd,IDC_RIGHT3, CB_SETCURSEL, dlg_current_scancodes[12], 0L);
 		SendDlgItemMessage(hdwnd,IDC_DOWN3, CB_SETCURSEL, dlg_current_scancodes[13], 0L);
 		SendDlgItemMessage(hdwnd,IDC_LEFT3, CB_SETCURSEL, dlg_current_scancodes[14], 0L);
+		SendDlgItemMessage(hdwnd,IDC_BUTTON6_1, CB_SETCURSEL, dlg_current_scancodes[15], 0L);
+		SendDlgItemMessage(hdwnd,IDC_BUTTON7_1, CB_SETCURSEL, dlg_current_scancodes[16], 0L);
 		
 
 		// 2.1. Мёртвые зоны
@@ -574,7 +578,7 @@ typedef struct
 	int max_index;
 } T_save_struct;
 
-#define NUM_SAVE_LINES 39
+#define NUM_SAVE_LINES 41
 static T_save_struct save_struct[NUM_SAVE_LINES]=
 {
 	{"Sensitivity",save_int,&dlg_current_sensitivity,save_int,&dlg_sensitivity, MH_NUM_SENSITIVITY},
@@ -596,6 +600,8 @@ static T_save_struct save_struct[NUM_SAVE_LINES]=
 	{"Button12",save_int,&(dlg_current_scancodes[12]),save_WORD,&dlg_scancodes, MH_NUM_SCANCODES},
 	{"Button13",save_int,&(dlg_current_scancodes[13]),save_WORD,&dlg_scancodes, MH_NUM_SCANCODES},
 	{"Button14",save_int,&(dlg_current_scancodes[14]),save_WORD,&dlg_scancodes, MH_NUM_SCANCODES}, //16
+	{"Button15",save_int,&(dlg_current_scancodes[15]),save_WORD,&dlg_scancodes, MH_NUM_SCANCODES},
+	{"Button16",save_int,&(dlg_current_scancodes[16]),save_WORD,&dlg_scancodes, MH_NUM_SCANCODES},
 
 	{"DeadzoneX",save_int,&dlg_current_deadzone_x,save_int,&dlg_deadzones, MH_DEAD_ZONES},
 	{"DeadzoneY",save_int,&dlg_current_deadzone_y,save_int,&dlg_deadzones, MH_DEAD_ZONES}, //18
@@ -893,6 +899,8 @@ void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 			dlg_current_scancodes[12]=SendDlgItemMessage(hdwnd,IDC_RIGHT3, CB_GETCURSEL, 0, 0L);
 			dlg_current_scancodes[13]=SendDlgItemMessage(hdwnd,IDC_DOWN3, CB_GETCURSEL, 0, 0L);
 			dlg_current_scancodes[14]=SendDlgItemMessage(hdwnd,IDC_LEFT3, CB_GETCURSEL, 0, 0L);
+			dlg_current_scancodes[15]=SendDlgItemMessage(hdwnd,IDC_BUTTON6_1, CB_GETCURSEL, 0, 0L);
+			dlg_current_scancodes[16]=SendDlgItemMessage(hdwnd,IDC_BUTTON7_1, CB_GETCURSEL, 0, 0L);
 						
 			MHKeypad::Init(dlg_scancodes[dlg_current_scancodes[0]].value,
 				dlg_scancodes[dlg_current_scancodes[1]].value,
@@ -908,7 +916,9 @@ void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 				dlg_scancodes[dlg_current_scancodes[11]].value,
 				dlg_scancodes[dlg_current_scancodes[12]].value,
 				dlg_scancodes[dlg_current_scancodes[13]].value,
-				dlg_scancodes[dlg_current_scancodes[14]].value);
+				dlg_scancodes[dlg_current_scancodes[14]].value,
+				dlg_scancodes[dlg_current_scancodes[15]].value,
+				dlg_scancodes[dlg_current_scancodes[16]].value);
 			
 
 			// 2.1. Мёртвые зоны

@@ -3,21 +3,16 @@
 #include "Settings.h"
 #include "MHRepErr.h"
 
-#ifdef _DEBUG
-#include <stdio.h>
-static TCHAR debug_buf[4096];
-#endif
-
 extern HWND		MHhwnd;
 
 int MHKeypad::keypad_position=-1;
 // Изначально стрелки
-WORD MHKeypad::scancode[15]={0xE048, 0xE04D, 0xE050, 0xE04B, 0x3B, 0x3B};
+WORD MHKeypad::scancode[17]={0xE048, 0xE04D, 0xE050, 0xE04B, 0x3B, 0x3B};
 
 // Для поиска глюков
 #ifdef _DEBUG
-static int button_pressed[15]={0};
 #endif
+static int button_pressed[15]={0};
 
 // Таблица кодирования 8 направлений четырьмя клавишами
 int key8[8][4]=
@@ -35,7 +30,8 @@ int key8[8][4]=
 
 void MHKeypad::Init(WORD _scancode0, WORD _scancode1, WORD _scancode2, WORD _scancode3, WORD _scancode4, WORD _scancode5,
 	WORD _scancode6, WORD _scancode7, WORD _scancode8, WORD _scancode9, WORD _scancode10,
-	WORD _scancode11, WORD _scancode12, WORD _scancode13, WORD _scancode14)
+	WORD _scancode11, WORD _scancode12, WORD _scancode13, WORD _scancode14,
+	WORD _scancode15, WORD _scancode16)
 {
 	if(-1!=keypad_position) Reset(); // Перед переинициализацией отпустить кнопки
 
@@ -56,6 +52,8 @@ void MHKeypad::Init(WORD _scancode0, WORD _scancode1, WORD _scancode2, WORD _sca
 	scancode[12]=_scancode12;
 	scancode[13]=_scancode13;
 	scancode[14]=_scancode14;
+	scancode[15]=_scancode15;
+	scancode[16]=_scancode16;
 }
 
 
@@ -72,31 +70,52 @@ bool MHKeypad::Press4(int position, bool down, int shift)
 
 	if(!down&&(0==button_pressed[position+shift])) 
 		MHReportError(L"Повторное отпускание");
-	if(down) button_pressed[position+shift]=1; else button_pressed[position+shift]=0;
+
+	button_pressed[position+shift] = down ? 1 : 0;
 #endif
 
 	// Спец-кнопка 0xFFFF игнорируется
 	if(0xFFFF==scancode[position+shift]) return false;
 
-	INPUT input={0};
-	input.type=INPUT_KEYBOARD;
-	input.ki.dwFlags = KEYEVENTF_SCANCODE;
-	if(false==down)
+	// send two keys
+	INPUT inputs[2] = {0};
+	inputs[0].type = INPUT_KEYBOARD;
+	inputs[0].ki.dwFlags = KEYEVENTF_SCANCODE;
+	if (false == down)
 	{
-		input.ki.dwFlags|=KEYEVENTF_KEYUP;
+		inputs[0].ki.dwFlags |= KEYEVENTF_KEYUP;
 	}
-
-	if(scancode[position+shift]>0xFF) // Этот скан-код из двух байтов, где первый - E0
+	if (scancode[position + shift] > 0xFF) // Этот скан-код из двух байтов, где первый - E0
 	{
-		input.ki.dwFlags|=KEYEVENTF_EXTENDEDKEY;
+		inputs[0].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
 	}
+	inputs[0].ki.wScan = scancode[position + shift];
 
-	input.ki.wScan=scancode[position+shift];
-	SendInput(1,&input,sizeof(INPUT));
+	int num_of_keys = 1;
+	// поддержка второй клавиши для ЛКМ и ПКМ
+	if (position == 5 || position == 10) {
+		int second_key_index = position == 5 ? 15 : 16;
+		if (0xFFFF != scancode[second_key_index]) {
+			num_of_keys = 2;
+			inputs[1].type = INPUT_KEYBOARD;
+			inputs[1].ki.dwFlags = KEYEVENTF_SCANCODE;
+			if (false == down)
+			{
+				inputs[1].ki.dwFlags |= KEYEVENTF_KEYUP;
+			}
+			if (scancode[second_key_index] > 0xFF) // Этот скан-код из двух байтов, где первый - E0
+			{
+				inputs[1].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+			}
+			inputs[1].ki.wScan = scancode[second_key_index];
+		}
+	}
+	SendInput(num_of_keys, inputs, sizeof(INPUT));
 
 #ifdef _DEBUG
-	swprintf_s(debug_buf,_countof(debug_buf),L"%d %d %d %d %d %d  %d %d %d %d  %d  %d %d %d %d\r\n",
-		button_pressed[0],button_pressed[1],button_pressed[2],button_pressed[3],button_pressed[4],
+	TCHAR debug_buf[4096];
+	swprintf_s(debug_buf,_countof(debug_buf),L"position: %d, button_pressed: %d %d %d %d %d %d  %d %d %d %d  %d  %d %d %d %d\r\n",
+		position, button_pressed[0],button_pressed[1],button_pressed[2],button_pressed[3],button_pressed[4],
 		button_pressed[5],
 		button_pressed[6],button_pressed[7],button_pressed[8],button_pressed[9],button_pressed[10],
 		button_pressed[11],button_pressed[12],button_pressed[13],button_pressed[14]);
@@ -109,7 +128,7 @@ bool MHKeypad::Press4(int position, bool down, int shift)
 
 // Нажимает кнопку, но отжимает предыдущую нажатую, обрабатывает до 8 позиций
 // меняет keypad_position
-// переsрисовывает экран
+// перерисовывает экран
 void MHKeypad::Press(int position, bool down, int shift)
 {
 	// Нажатые кнопки повторно не нажимаем, а отжатые - не отжимаем
@@ -165,14 +184,22 @@ void MHKeypad::Press(int position, bool down, int shift)
 			{
 				if(-1!=keypad_position) // сравниваем нажатое и новое направления по 4 клавишам
 				{
-					if(key8[keypad_position][i]==key8[position][i]) continue; // Эту кнопку не меняем
+					if (key8[keypad_position][i] == key8[position][i]) {
+						continue; // Эту кнопку не меняем
+					}
 
-					if(1==key8[keypad_position][i]) Press4(i,false,shift); // отпускаем
-					else Press4(i,true,shift); // нажимаем
+					if (1 == key8[keypad_position][i]) {
+						Press4(i,false,shift); // отпускаем
+					}
+					else {
+						Press4(i,true,shift); // нажимаем
+					}
 				}
 				else // отжимать нечего, только нажимаем
 				{
-					if(1==key8[position][i]) Press4(i,true,shift);
+					if (1 == key8[position][i]) {
+						Press4(i, true, shift);
+					}
 				}
 			}
 			keypad_position=position;
@@ -182,7 +209,7 @@ void MHKeypad::Press(int position, bool down, int shift)
 		else 
 		{
 			//OutputDebugString("Отпустили8\n");
-			Reset(shift); // при нажатии отпустить все отсальные. А при отпускании не делать этого.
+			Reset(shift); // при нажатии отпустить все оcтальные. А при отпускании не делать этого.
 			keypad_position=-1;
 		}
 	} // 8 направлений

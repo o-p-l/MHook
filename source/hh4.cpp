@@ -18,7 +18,7 @@ static LONG X,Y,last_x_direction,last_y_direction;
 static DWORD last_any_time=0; // Время последнего пперемещения мыши
 
 // Какие кнопки нажимать в зависимости от направлений x_direction+1, y_direction+1;
-static int button_pressed[3][3]=
+static int button_pressed4[3][3]=
 {
 	{7,6,5},
 	{0,-1,4},
@@ -203,7 +203,7 @@ int MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 */		
 		if((last_y_direction!=y_direction)||(last_x_direction!=x_direction)) // Нажатые кнопки поменялись
 		{
-			position=button_pressed[x_direction+1][y_direction+1];
+			position=button_pressed4[x_direction+1][y_direction+1];
 			if(-1==position) 
 			{
 				MHKeypad::Reset(); // Отпускаем нажатые кнопки
@@ -316,7 +316,7 @@ void MHookHandler4::OnTimer()
 		if(0!=last_x_direction) // направление по оси X поменялось
 		{
 			last_x_direction=0;
-			position=button_pressed[last_x_direction+1][last_y_direction+1];
+			position=button_pressed4[last_x_direction+1][last_y_direction+1];
 			if(-1==position) 
 			{
 				MHKeypad::Reset(); // Отпускаем нажатые кнопки
@@ -333,7 +333,7 @@ void MHookHandler4::OnTimer()
 		if(0!=last_y_direction) // направление по оси Y поменялось
 		{
 			last_y_direction=0;
-			position=button_pressed[last_x_direction+1][last_y_direction+1];
+			position=button_pressed4[last_x_direction+1][last_y_direction+1];
 			if(-1==position) 
 			{
 				MHKeypad::Reset(); // Отпускаем нажатые кнопки
