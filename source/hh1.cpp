@@ -67,7 +67,9 @@ int MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 		dy=(_y-last_y);
 
 		// Может, пятую кнопку можно нажать?
-		if(MHSettings::flag_enable_speed_button) OnFastMove(dx,dy);
+		if (MHSettings::flag_enable_speed_button) {
+			OnFastMove(dx, dy);
+		}
 
 		position=MHVector::NewValues(dx,dy);
 
@@ -163,7 +165,10 @@ int MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 							flag_opposite_direction=false;
 							if(goup) MHKeypad::Press(position_mem_opposite,false, alt2_offset); // Флаг сказал, что нужно тут же отжать
 						}
-						else opposite_time=timeGetTime(); // паузы в 50 мс неподвижности не было, перевзводим
+						else
+						{
+							opposite_time = timeGetTime(); // паузы в 50 мс неподвижности не было, перевзводим
+						}
 					}
 				}
 				// else осталось только -2, игнорируем

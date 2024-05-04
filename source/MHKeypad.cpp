@@ -74,43 +74,60 @@ bool MHKeypad::Press4(int position, bool down, int shift)
 	button_pressed[position+shift] = down ? 1 : 0;
 #endif
 
+	int num_of_keys = 0;
+	INPUT inputs[2] = { 0 };
+	INPUT input1 = { 0 };
+	INPUT input2 = { 0 };
 	// Спец-кнопка 0xFFFF игнорируется
-	if(0xFFFF==scancode[position+shift]) return false;
-
-	// send two keys
-	INPUT inputs[2] = {0};
-	inputs[0].type = INPUT_KEYBOARD;
-	inputs[0].ki.dwFlags = KEYEVENTF_SCANCODE;
-	if (false == down)
-	{
-		inputs[0].ki.dwFlags |= KEYEVENTF_KEYUP;
+	if (0xFFFF != scancode[position + shift]) {
+		input1.type = INPUT_KEYBOARD;
+		input1.ki.dwFlags = KEYEVENTF_SCANCODE;
+		if (false == down)
+		{
+			input1.ki.dwFlags |= KEYEVENTF_KEYUP;
+		}
+		if (scancode[position + shift] > 0xFF) // Этот скан-код из двух байтов, где первый - E0
+		{
+			input1.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+		}
+		input1.ki.wScan = scancode[position + shift];
+		inputs[num_of_keys] = input1;
+		++num_of_keys;
 	}
-	if (scancode[position + shift] > 0xFF) // Этот скан-код из двух байтов, где первый - E0
-	{
-		inputs[0].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
-	}
-	inputs[0].ki.wScan = scancode[position + shift];
 
-	int num_of_keys = 1;
 	// поддержка второй клавиши для ЛКМ и ПКМ
+	bool only_second_key = false;
 	if (position == 5 || position == 10) {
 		int second_key_index = position == 5 ? 15 : 16;
 		if (0xFFFF != scancode[second_key_index]) {
-			num_of_keys = 2;
-			inputs[1].type = INPUT_KEYBOARD;
-			inputs[1].ki.dwFlags = KEYEVENTF_SCANCODE;
+			input2.type = INPUT_KEYBOARD;
+			input2.ki.dwFlags = KEYEVENTF_SCANCODE;
 			if (false == down)
 			{
-				inputs[1].ki.dwFlags |= KEYEVENTF_KEYUP;
+				input2.ki.dwFlags |= KEYEVENTF_KEYUP;
 			}
 			if (scancode[second_key_index] > 0xFF) // Этот скан-код из двух байтов, где первый - E0
 			{
-				inputs[1].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+				input2.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
 			}
-			inputs[1].ki.wScan = scancode[second_key_index];
+			input2.ki.wScan = scancode[second_key_index];
+			inputs[num_of_keys] = input2;
+			++num_of_keys;
+			only_second_key = num_of_keys == 1;
 		}
 	}
+
+	if (num_of_keys == 0) {
+		return false;
+	}
+
 	SendInput(num_of_keys, inputs, sizeof(INPUT));
+
+	// if only second key pressed return false to also process the mouse button
+	if (only_second_key) {
+		return false;
+	}
+	
 
 #ifdef _DEBUG
 	TCHAR debug_buf[4096];
